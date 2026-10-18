@@ -6,6 +6,7 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import { addPlanarUVs, makeChamferedBlock, makeWoodTexture, seededRandom, subtractOpening } from '../lib/lowPoly'
 import Mug from './Mug'
 import Pipes from './Pipes'
+import Rug from './Rug'
 import Window, { WINDOW_OPENING } from './Window'
 
 // Monitor's front (blue) screen face in the desk group's space: it faces +x,
@@ -32,6 +33,11 @@ const DESK_TOP_MESHES = ['Cylinder001', 'Cylinder002']
 const DESK_TOP_CENTER = [0.701, 1.095, 0]
 const DESK_TOP_SIZE = [1.252, 0.094, 2.0] // depth (x), thickness (y), width (z)
 const DESK_TOP_PLANKS = 1
+// The wall gauges (housing and needles), moved down onto the pipes and right,
+// clear of the plant.
+const GAUGE_MESHES = ['Cylinder032', 'Cube136', 'Cube137']
+const GAUGE_DROP = 0.41
+const GAUGE_SHIFT_Z = -0.2
 // The monitor's blue screen mesh.
 const MONITOR_SCREEN_MESH = 'Cube009_3'
 
@@ -133,6 +139,14 @@ export default function Desk({ onNotebookClick }) {
       if (obj.name === PIPE_RUNS_MESH) obj.visible = false
       if (obj.isMesh && obj.material?.name === PIPE_ELBOW_MATERIAL) obj.visible = false
     })
+
+    // The gauges sat at the model's old pipe height; move them onto the pipes.
+    scene.traverse((obj) => {
+      if (!GAUGE_MESHES.includes(obj.name) || obj.userData.gaugeMoved) return
+      obj.position.y -= GAUGE_DROP
+      obj.position.z += GAUGE_SHIFT_Z
+      obj.userData.gaugeMoved = true
+    })
   }, [scene])
   const needle1Ref = useRef()
   const needle2Ref = useRef()
@@ -231,6 +245,9 @@ export default function Desk({ onNotebookClick }) {
 
       {/* 🪵 Low-poly wooden desk top */}
       <DeskTop />
+
+      {/* 🟣 Rug in front of the desk */}
+      <Rug />
 
       {/* ☕ Coffee (or a beer on Fridays) */}
       <Mug />

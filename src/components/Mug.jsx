@@ -6,8 +6,8 @@ import * as THREE from 'three'
 // mug of steaming coffee, or a beer on Fridays. Add ?drink=beer or
 // ?drink=coffee to the URL to force one.
 const DESK_SURFACE_Y = 1.142
-const POSITION = [0.7, DESK_SURFACE_Y, -0.42]
-const SCALE = 1.35
+const POSITION = [0.72, DESK_SURFACE_Y, -0.78]
+const SCALE = 1.7
 const SIDES = 6
 
 const isFriday = () => {
