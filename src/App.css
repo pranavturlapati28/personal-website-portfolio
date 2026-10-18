@@ -106,8 +106,13 @@
   }
 
 @media (max-width: 900px), (max-aspect-ratio: 4/5) {
-  /* Size containment would trap the full-screen notebook inside the frame. */
+  /* Phones use the whole screen instead of a letterboxed 16:9 strip; the
+     camera widens its field of view to fit (see defaultFovFor in App.jsx).
+     Size containment would trap the full-screen notebook inside the frame. */
   .stage-frame {
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
     container-type: normal;
   }
 
