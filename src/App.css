@@ -104,3 +104,34 @@
     color: #ffffff;
     border-color: #ffffffaa;
   }
+
+@media (max-width: 900px), (max-aspect-ratio: 4/5) {
+  /* Size containment would trap the full-screen notebook inside the frame. */
+  .stage-frame {
+    container-type: normal;
+  }
+
+  .back-btn {
+    position: fixed;
+    top: 62px;
+    left: 1rem;
+  }
+
+  .top-bar-inner {
+    padding: 0 1rem;
+  }
+
+  .logo {
+    font-size: 1rem;
+    white-space: nowrap;
+  }
+
+  .top-bar-right {
+    gap: 0.8rem;
+  }
+
+  .about-btn {
+    white-space: nowrap;
+    padding: 0.35rem 0.7rem;
+  }
+}

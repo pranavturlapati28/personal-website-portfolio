@@ -1,47 +1,24 @@
 import React from 'react'
-import { FaLinkedin, FaGithub, FaEnvelope } from 'react-icons/fa'
+import { FaLinkedin, FaGithub, FaEnvelope, FaFileAlt } from 'react-icons/fa'
 import './NotebookOverlay.css'
 
-const jobs = [
-  {
-    title: 'FinOps Foundation Member',
-    company: 'FinOps Foundation',
-    dates: 'December 2025 - February 2026',
-  },
-  {
-    title: 'Claude Campus Builder',
-    company: 'Anthropic',
-    dates: 'September 2025 - February 2026',
-  },
-  {
-    title: 'Undergraduate Research Assistant',
-    company: 'University of North Carolina at Chapel Hill',
-    dates: 'October 2023 - February 2026',
-  },
-  {
-    title: 'UNC Basketball Data Analytics Intern',
-    company: 'UNC Basketball',
-    dates: 'June 2023 - January 2024',
-  },
-  {
-    title: 'Software Engineering Intern',
-    company: 'Splunk',
-    dates: 'July 2025 - August 2025',
-  },
-  {
-    title: 'Software Engineer Intern',
-    company: 'Cisco',
-    dates: 'May 2025 - July 2025',
-  },
-]
+const RESUME_URL = import.meta.env.BASE_URL + 'Pranav_Turlapati_Resume.pdf'
 
-// Simplified logo row shown for now instead of the full jobs list above.
+// Companies with a logo file render it (masked to ink color unless `color`);
+// the rest render their name in the notebook's header font.
 const logoExperience = [
   {
-    company: 'Cisco',
-    role: 'SWE Intern',
-    logo: 'images/cisco-logo.png',
-    ratio: 1280 / 676,
+    company: 'Traba',
+    role: 'Software Engineer II',
+    logo: 'images/traba-logo.png',
+    ratio: 1280 / 353,
+  },
+  {
+    company: 'Merget',
+    role: 'Founding Engineer',
+    logo: 'images/merget-logo.png',
+    ratio: 1,
+    color: true,
   },
   {
     company: 'Splunk',
@@ -50,37 +27,53 @@ const logoExperience = [
     ratio: 638 / 193,
   },
   {
-    company: 'Merget',
-    role: 'Founding Engineer',
-    logo: 'images/merget-logo.png',
-    ratio: 1,
-    height: 100,
-    color: true,
+    company: 'Cisco',
+    role: 'SWE Intern',
+    logo: 'images/cisco-logo.png',
+    ratio: 1280 / 676,
   },
 ]
 
-const experience = [
+const projects = [
   {
-    title: 'MIT ML Deforestation Prediction',
+    title: 'AI Decision Model Benchmark (Traba)',
+    url: 'https://traba.work/company/engineering/decision-model-bakeoff',
     description:
-      'Developed a machine learning model to predict deforestation patterns using satellite/geospatial data. Python - GeoPandas, AWS',
+      'Led a 5-model benchmark on 9K cases. Routing low-confidence cases to a second model cut decision costs 78% at higher accuracy.',
   },
   {
-    title: 'Contractor Lead Generation Platform',
+    title: 'Graph-Based Merge Algorithms (Merget)',
     description:
-      'Built a platform that generates and manages leads for contractors, streamlining how they find and convert potential clients. Javascript - React, Python - FastAPI, Vercel, GCP',
+      'Version control for AI-generated code. Graph-based merging catches code conflicts 2x more accurately than Git line diffs.',
   },
   {
-    title: 'C Self-Made Compiler',
+    title: 'Live Basketball Analytics (UNC, Duke, NC State)',
     description:
-      'Designed and implemented a compiler from scratch in C, handling lexing, parsing, and code generation for a custom language. C',
-  },
-  {
-    title: 'AI Basketball Visualization',
-    description:
-      'Built a system that delivers live AI-generated commentary and real-time statistics for basketball games. Langchain, Python',
+      'CUDA C++ pipeline with PyTorch 3D player tracking, streaming live coaching insights at sub-100ms latency.',
   },
 ]
+
+const publications = [
+  {
+    title:
+      'Near-infrared spectroscopy-enabled electromechanical systems for fast mapping of biomechanics and subcutaneous diagnosis',
+    venue: 'Science Advances, 2024',
+    url: 'https://doi.org/10.1126/sciadv.adq9358',
+  },
+  {
+    title: 'Resolution Modeling: WiFi Protocol Classification (first author)',
+    venue: 'Research report, UNC, 2026',
+    url: 'https://drive.google.com/file/d/1o6vC-gvAdSaddZsyaVWcvzoc-XAXmsgP/view?usp=sharing',
+  },
+]
+
+function ExternalLink({ href, children }) {
+  return (
+    <a href={href} target="_blank" rel="noopener noreferrer" className="notebook-inline-link">
+      {children}
+    </a>
+  )
+}
 
 export default function NotebookOverlay({ visible }) {
   return (
@@ -117,12 +110,14 @@ export default function NotebookOverlay({ visible }) {
           <a href="mailto:pranavturlapati02@gmail.com" className="notebook-contact-link">
             <FaEnvelope /> Email
           </a>
+          <a href={RESUME_URL} target="_blank" rel="noopener noreferrer" className="notebook-contact-link">
+            <FaFileAlt /> Resume
+          </a>
         </div>
         <p className="notebook-bio">
-          Hey my name is Pranav. I just graduated from the University of North Carolina at
-          Chapel Hill. I am currently working as a founding engineer creating innovative
-          developer tools. My current skills are in web+app development, observability,
-          cloud infrastructure, and numerous other skills. Reach out for my resume.
+          Hey, I'm Pranav! I'm a software engineer at Traba, building AI agents and ML matching
+          between workers and factories. Before that I was a founding engineer at Merget and
+          interned at Splunk and Cisco. UNC Chapel Hill grad in Computer Science and Statistics.
         </p>
 
         <h2 className="notebook-header notebook-section-title">Experience</h2>
@@ -130,21 +125,25 @@ export default function NotebookOverlay({ visible }) {
           {logoExperience.map((job) => (
             <div className="notebook-logo-item" key={job.company}>
               <div className="notebook-logo-slot">
-                {job.color ? (
+                {!job.logo ? (
+                  <span className="notebook-header notebook-logo-text">{job.company}</span>
+                ) : job.color ? (
                   <img
                     className="notebook-logo-image"
                     src={import.meta.env.BASE_URL + job.logo}
                     alt={job.company}
-                    style={{ aspectRatio: job.ratio, height: job.height || 56 }}
+                    style={{ aspectRatio: job.ratio, height: '100%' }}
                   />
                 ) : (
                   <div
                     className="notebook-logo-mask"
+                    role="img"
+                    aria-label={job.company}
                     style={{
                       maskImage: `url(${import.meta.env.BASE_URL + job.logo})`,
                       WebkitMaskImage: `url(${import.meta.env.BASE_URL + job.logo})`,
                       aspectRatio: job.ratio,
-                      height: job.height || 56,
+                      height: '70%',
                     }}
                   />
                 )}
@@ -158,18 +157,27 @@ export default function NotebookOverlay({ visible }) {
       <div className="notebook-spine-gap" />
 
       <div className="notebook-page">
-        <h2 className="notebook-header notebook-section-title">Languages</h2>
-        <p className="notebook-body-text">Python, Rust, Go, C++, JavaScript, C, Java</p>
-
-        <h2 className="notebook-header notebook-section-title">Technologies</h2>
+        <h2 className="notebook-header notebook-section-title">Skills</h2>
         <p className="notebook-body-text">
-          AWS, GCP, Linode + Akamai, nginx, React, NextJS, Vercel, Fly.io, Tauri, git, Github, CUDA.
+          Python, TypeScript, Rust, Go, C++, SQL · React, FastAPI, LangChain, PyTorch, CUDA ·
+          AWS, GCP, Kafka, PostgreSQL, Docker, Terraform
         </p>
 
         <h2 className="notebook-header notebook-section-title">Projects</h2>
-        {experience.map((item) => (
+        {projects.map((item) => (
           <p className="notebook-body-text notebook-experience-item" key={item.title}>
-            • <strong>{item.title}</strong>: {item.description}
+            •{' '}
+            <strong>
+              {item.url ? <ExternalLink href={item.url}>{item.title}</ExternalLink> : item.title}
+            </strong>
+            : {item.description}
+          </p>
+        ))}
+
+        <h2 className="notebook-header notebook-section-title">Publications</h2>
+        {publications.map((item) => (
+          <p className="notebook-body-text notebook-experience-item" key={item.title}>
+            • <ExternalLink href={item.url}>{item.title}</ExternalLink>. <em>{item.venue}</em>
           </p>
         ))}
       </div>

@@ -3,7 +3,7 @@ import React from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { Suspense, useState, useRef, useEffect } from 'react'
 import * as THREE from 'three'
-import { FaLinkedin, FaGithub, FaEnvelope } from 'react-icons/fa'
+import { FaLinkedin, FaGithub, FaEnvelope, FaFileAlt } from 'react-icons/fa'
 import Desk from './components/Desk'
 import NotebookOverlay from './components/NotebookOverlay'
 import './App.css';
@@ -16,8 +16,24 @@ const DEFAULT_TARGET = new THREE.Vector3(0, 0, 0)
 const DEFAULT_UP = new THREE.Vector3(0, 1, 0)
 const DEFAULT_FOV = 45
 
-// x/z taken from clicking the notebook's center ring directly (see the debug
-// click-logger in Desk.jsx).
+// How far panning can move the orbit target from the default, so the camera
+// stays in the room.
+const PAN_MIN = new THREE.Vector3(-0.6, -0.3, -0.4)
+const PAN_MAX = new THREE.Vector3(0.6, 0.6, 0.4)
+const panOffset = new THREE.Vector3()
+
+// Keeps the orbit target inside the pan box, moving the camera by the same
+// amount so the view angle doesn't change.
+function clampPan(event) {
+  const controls = event?.target
+  if (!controls) return
+  panOffset.copy(controls.target)
+  controls.target.clamp(PAN_MIN, PAN_MAX)
+  panOffset.sub(controls.target)
+  if (panOffset.lengthSq() > 0) controls.object.position.sub(panOffset)
+}
+
+// x/z of the notebook's center ring in world space.
 const NOTEBOOK_TARGET = new THREE.Vector3(-0.617, 0, 0.986)
 // Roll around the view axis so the notebook's bottom edge reads parallel to
 // the screen's bottom edge. Looking almost straight down makes lookAt's roll
@@ -53,19 +69,35 @@ const NOTEBOOK_AMBIENT = 0.35
 // 60Hz, since it's applied every frame rather than every second).
 const ZOOM_DECAY_RATE = 3.26
 
+// The camera counts as settled once it's within this distance of its target.
+const SETTLE_DISTANCE = 0.002
+
 function CameraRig({ zoomed, ambientRef }) {
   const { camera } = useThree()
   const currentTarget = useRef(DEFAULT_TARGET.clone())
   const currentUp = useRef(DEFAULT_UP.clone())
+  // Only drive the camera while flying to or from the notebook. Once it
+  // settles, OrbitControls owns it, so the visitor's zoom, rotation and pan stick.
+  const animating = useRef(false)
+
+  useEffect(() => {
+    animating.current = true
+  }, [zoomed])
 
   useFrame((state, delta) => {
     const t = 1 - Math.exp(-ZOOM_DECAY_RATE * delta)
+
+    const targetAmbient = zoomed ? NOTEBOOK_AMBIENT : DEFAULT_AMBIENT
+    if (ambientRef.current) {
+      ambientRef.current.intensity = THREE.MathUtils.lerp(ambientRef.current.intensity, targetAmbient, t)
+    }
+
+    if (!animating.current) return
 
     const targetPos = zoomed ? NOTEBOOK_CAMERA_POS : DEFAULT_CAMERA_POS
     const targetLook = zoomed ? NOTEBOOK_TARGET : DEFAULT_TARGET
     const targetUp = zoomed ? NOTEBOOK_UP : DEFAULT_UP
     const targetFov = zoomed ? NOTEBOOK_FOV : DEFAULT_FOV
-    const targetAmbient = zoomed ? NOTEBOOK_AMBIENT : DEFAULT_AMBIENT
 
     camera.position.lerp(targetPos, t)
     currentTarget.current.lerp(targetLook, t)
@@ -75,8 +107,16 @@ function CameraRig({ zoomed, ambientRef }) {
     camera.fov = THREE.MathUtils.lerp(camera.fov, targetFov, t)
     camera.updateProjectionMatrix()
 
-    if (ambientRef.current) {
-      ambientRef.current.intensity = THREE.MathUtils.lerp(ambientRef.current.intensity, targetAmbient, t)
+    if (camera.position.distanceTo(targetPos) < SETTLE_DISTANCE) {
+      // Snap exactly onto the target so OrbitControls resumes from a clean pose.
+      camera.position.copy(targetPos)
+      currentTarget.current.copy(targetLook)
+      currentUp.current.copy(targetUp)
+      camera.up.copy(targetUp)
+      camera.lookAt(targetLook)
+      camera.fov = targetFov
+      camera.updateProjectionMatrix()
+      animating.current = false
     }
   })
 
@@ -135,6 +175,15 @@ export default function App() {
             >
               <FaEnvelope />
             </a>
+            <a
+              href={import.meta.env.BASE_URL + 'Pranav_Turlapati_Resume.pdf'}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="top-bar-icon-link"
+              aria-label="Resume"
+            >
+              <FaFileAlt />
+            </a>
             <button className="about-btn" onClick={() => setZoomed(true)}>
               About Me
             </button>
@@ -143,21 +192,25 @@ export default function App() {
       </div>
       <div className="stage">
         <div className="stage-frame">
-          <Canvas camera={{ position: [0, 1.5, 5], fov: 45 }}>
+          {/* Stencil buffer: the window uses it to show the city only through the glass. */}
+          <Canvas camera={{ position: [0, 1.5, 5], fov: 45 }} gl={{ stencil: true }}>
             <ambientLight ref={ambientRef} intensity={0.2} />
 
             <OrbitControls
               enabled={!zoomed}
               minPolarAngle={Math.PI / 3}
-              maxPolarAngle={Math.PI / 2}
-              minAzimuthAngle={-Math.PI / 4}
-              maxAzimuthAngle={Math.PI / 4}
+              maxPolarAngle={Math.PI / 2.2}
+              minAzimuthAngle={-Math.PI / 6}
+              maxAzimuthAngle={Math.PI / 6}
+              minDistance={1.5}
+              maxDistance={6}
+              onChange={clampPan}
             />
 
             <CameraRig zoomed={zoomed} ambientRef={ambientRef} />
 
             <Suspense fallback={null}>
-              <Desk onNotebookClick={() => setZoomed(true)} zoomed={zoomed} />
+              <Desk onNotebookClick={() => setZoomed(true)} />
             </Suspense>
           </Canvas>
           <Loader />
