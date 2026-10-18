@@ -1,10 +1,10 @@
 {
-  "name": "blender-3d-portfolio",
+  "name": "personal-website-portfolio",
   "version": "1.0.0",
   "private": true,
   "repository": {
     "type": "git",
-    "url": "git@github.com:pranavturlapati28/Pranav-.git"
+    "url": "git@github.com:pranavturlapati28/personal-website-portfolio.git"
   },
   "scripts": {
     "dev": "vite",

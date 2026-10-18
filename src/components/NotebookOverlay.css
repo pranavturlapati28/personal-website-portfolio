@@ -55,33 +55,42 @@
 .notebook-header-row {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 1.5rem;
   margin-bottom: 1.2rem;
 }
 
 .notebook-name {
-  font-size: 2.6rem;
+  /* Scales with the 3D frame (a size container) so the name always fits the
+     notebook page instead of clipping on smaller windows. */
+  font-size: clamp(1.1rem, 2.1cqw, 2.6rem);
   line-height: 1.1;
   margin: 0;
+  min-width: 0;
+  width: fit-content;
 }
 
 .notebook-name-first {
+  display: block;
   font-size: 1.9em;
 }
 
 .notebook-name-last {
+  display: block;
   font-size: 1.4em;
 }
 
 .notebook-profile-image {
-  width: 140px;
+  width: clamp(70px, 9cqw, 140px);
   flex-shrink: 0;
   filter: grayscale(1) contrast(1.05);
 }
 
 .notebook-contact-row {
   display: flex;
-  gap: 1.4rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem 1.4rem;
   margin-bottom: 1rem;
 }
 
@@ -91,7 +100,7 @@
   gap: 0.4rem;
   color: #2f3b52;
   text-decoration: none;
-  font-size: 1.05rem;
+  font-size: clamp(0.8rem, 0.95cqw, 1.05rem);
 }
 
 .notebook-contact-link:hover {
@@ -99,16 +108,18 @@
 }
 
 .notebook-bio {
-  padding-left: 15px;
-  font-size: 1.3rem;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+  font-size: clamp(0.85rem, 1.1cqw, 1.3rem);
   line-height: 1.5;
   max-width: 46ch;
 }
 
 .notebook-section-title {
   font-family: 'Scribble Box', cursive;
-  font-size: 1.5rem;
-  margin: 1.4rem 0 0.3rem;
+  font-size: clamp(1rem, 1.25cqw, 1.5rem);
+  margin: 1.1rem 0 0.3rem;
 }
 
 .notebook-section-title:first-child {
@@ -116,35 +127,25 @@
 }
 
 .notebook-body-text {
-  font-size: 1.1rem;
-  line-height: 1.5;
+  font-size: clamp(0.7rem, 1.05cqw, 1.15rem);
+  line-height: 1.45;
 }
 
 .notebook-experience-item {
-  margin-bottom: 0.9rem;
+  margin: 0 0 0.6rem;
 }
 
-.notebook-job-item {
-  margin-bottom: 0.9rem;
-}
-
-.notebook-job-title {
-  font-weight: bold;
-  margin: 0;
-  font-size: 1.1rem;
-}
-
-.notebook-job-dates {
-  font-size: 0.95rem;
-  font-style: italic;
-  opacity: 0.75;
-  margin: 0 0 0.2rem;
+.notebook-inline-link {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 .notebook-logo-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 1.6rem;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: start;
+  gap: 0.8rem;
   padding-top: 15px;
 }
 
@@ -152,11 +153,16 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  flex: 1;
+}
+
+.notebook-logo-text {
+  font-size: clamp(1rem, 1.6cqw, 2rem);
+  color: #2f3b52;
 }
 
 .notebook-logo-slot {
-  height: 100px;
+  height: clamp(40px, 5cqw, 80px);
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -173,6 +179,12 @@
   mask-position: center;
 }
 
+.notebook-logo-image,
+.notebook-logo-mask {
+  max-width: 100%;
+  max-height: 100%;
+}
+
 .notebook-logo-image {
   display: block;
   width: auto;
@@ -181,6 +193,61 @@
 
 .notebook-logo-role {
   margin: 0.4rem 0 0;
-  font-size: 0.95rem;
+  font-size: clamp(0.7rem, 0.85cqw, 0.95rem);
   text-align: center;
+}
+
+/* Phones and portrait screens: the 16:9 frame is too small to read the
+   notebook in place, so show its content as a full-screen scrollable page. */
+@media (max-width: 900px), (max-aspect-ratio: 4/5) {
+  .notebook-overlay {
+    position: fixed;
+    inset: 50px 0 0 0;
+    display: block;
+    padding: 3.5rem 1rem 2rem;
+    overflow-y: auto;
+    background: #d9c7a4;
+  }
+
+  .notebook-page {
+    overflow: visible;
+    padding: 0.5rem 0.5rem 1rem;
+  }
+
+  .notebook-spine-gap {
+    display: none;
+  }
+
+  .notebook-name {
+    font-size: 1.6rem;
+  }
+
+  .notebook-profile-image {
+    width: 80px;
+  }
+
+  .notebook-bio {
+    font-size: 1.05rem;
+  }
+
+  .notebook-section-title {
+    font-size: 1.3rem;
+  }
+
+  .notebook-body-text,
+  .notebook-contact-link {
+    font-size: 1rem;
+  }
+
+  .notebook-logo-slot {
+    height: 44px;
+  }
+
+  .notebook-logo-text {
+    font-size: 1.2rem;
+  }
+
+  .notebook-logo-role {
+    font-size: 0.8rem;
+  }
 }
