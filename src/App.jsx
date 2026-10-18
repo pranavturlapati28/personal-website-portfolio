@@ -72,8 +72,21 @@ const ZOOM_DECAY_RATE = 3.26
 // The camera counts as settled once it's within this distance of its target.
 const SETTLE_DISTANCE = 0.002
 
+// The room is framed for a 16:9 view at DEFAULT_FOV. On narrower screens
+// (phones, which fill the whole screen) widen the field of view so the room
+// still fits across, cropping a little of the empty margin in portrait.
+const FRAME_ASPECT = 16 / 9
+const PORTRAIT_FIT = 0.8
+function defaultFovFor(aspect) {
+  if (aspect >= FRAME_ASPECT) return DEFAULT_FOV
+  const fit = aspect < 1 ? PORTRAIT_FIT : 1
+  const halfWidth = Math.tan(THREE.MathUtils.degToRad(DEFAULT_FOV / 2)) * FRAME_ASPECT * fit
+  return THREE.MathUtils.radToDeg(2 * Math.atan(halfWidth / aspect))
+}
+
 function CameraRig({ zoomed, ambientRef }) {
-  const { camera } = useThree()
+  const { camera, size } = useThree()
+  const defaultFov = defaultFovFor(size.width / size.height)
   const currentTarget = useRef(DEFAULT_TARGET.clone())
   const currentUp = useRef(DEFAULT_UP.clone())
   // Only drive the camera while flying to or from the notebook. Once it
@@ -83,6 +96,13 @@ function CameraRig({ zoomed, ambientRef }) {
   useEffect(() => {
     animating.current = true
   }, [zoomed])
+
+  // Refit the room when the screen size changes (e.g. rotating a phone).
+  useEffect(() => {
+    if (zoomed || animating.current) return
+    camera.fov = defaultFov
+    camera.updateProjectionMatrix()
+  }, [camera, defaultFov, zoomed])
 
   useFrame((state, delta) => {
     const t = 1 - Math.exp(-ZOOM_DECAY_RATE * delta)
@@ -97,7 +117,7 @@ function CameraRig({ zoomed, ambientRef }) {
     const targetPos = zoomed ? NOTEBOOK_CAMERA_POS : DEFAULT_CAMERA_POS
     const targetLook = zoomed ? NOTEBOOK_TARGET : DEFAULT_TARGET
     const targetUp = zoomed ? NOTEBOOK_UP : DEFAULT_UP
-    const targetFov = zoomed ? NOTEBOOK_FOV : DEFAULT_FOV
+    const targetFov = zoomed ? NOTEBOOK_FOV : defaultFov
 
     camera.position.lerp(targetPos, t)
     currentTarget.current.lerp(targetLook, t)
